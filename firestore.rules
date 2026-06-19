@@ -1,0 +1,62 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownsDocument(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin';
+    }
+
+    match /users/{uid} {
+      allow read: if ownsDocument(uid) || isAdmin();
+      allow create: if ownsDocument(uid)
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.role == 'user';
+      allow update: if ownsDocument(uid)
+        && request.resource.data.uid == resource.data.uid
+        && request.resource.data.role == resource.data.role;
+      allow delete: if ownsDocument(uid);
+    }
+
+    match /records/{recordId} {
+      allow read: if signedIn();
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /requests/{requestId} {
+      allow create: if signedIn()
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.status == 'pending';
+      allow read: if isAdmin() || (signedIn() && resource.data.userId == request.auth.uid);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /passengers/{uid} {
+      allow read, write: if ownsDocument(uid);
+    }
+
+    match /drivers/{uid} {
+      allow read: if signedIn();
+      allow write: if ownsDocument(uid);
+    }
+
+    match /rides/{rideId} {
+      allow create: if signedIn()
+        && request.resource.data.passengerUid == request.auth.uid;
+      allow read, update, delete: if signedIn()
+        && (
+          resource.data.passengerUid == request.auth.uid
+          || resource.data.driverUid == request.auth.uid
+        );
+    }
+  }
+}

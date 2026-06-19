@@ -1,0 +1,26 @@
+{
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "women-on-wheels-f8970",
+          "appId": "1:829302826679:android:0d60bc4a62efffc7050f32",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "women-on-wheels-f8970",
+          "configurations": {
+            "android": "1:829302826679:android:0d60bc4a62efffc7050f32",
+            "ios": "1:829302826679:ios:04bf310b2de81482050f32",
+            "web": "1:829302826679:web:385a595176c62f95050f32"
+          }
+        }
+      }
+    }
+  }
+}
